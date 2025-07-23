@@ -1,5 +1,4 @@
 const express = require("express");
-const { protect, restrictTo } = require("../../controllers/staff/adminController");
 const {
   createQuestion,
   getAllQuestions,
@@ -13,7 +12,8 @@ const validationFunction = require('../../middleware/validationFunction');
 
 const router = express.Router();
 
-router.use(protect, restrictTo('teacher'));
+// REMOVE or COMMENT OUT this line:
+// router.use(protect);
 
 router.post("/:examId", validationFunction(questionValidationSchema), createQuestion);
 router.get("/", getAllQuestions);

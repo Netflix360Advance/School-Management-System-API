@@ -1,27 +1,19 @@
-const Admin = require("../../models/Staff/Admin");
 const asyncHandler = require("../../utils/asyncHandler");
 const ClassLevel = require("../../models/Academic/ClassLevel");
 const AppError = require("../../utils/appErrors");
 
 exports.createClassLevel = asyncHandler(async (req, res, next) => {
   const { name, description } = req.body;
-  const createdBy = req.user.id
-  //check if exists
+  // Check if exists
   const classFound = await ClassLevel.findOne({ name });
   if (classFound) {
-    return next(new AppError("Class  already exists"))
+    return next(new AppError("Class already exists"))
   }
-  //create
+  // Create
   const classCreated = await ClassLevel.create({
     name,
-    description,
-    createdBy
+    description
   });
-  //push class into admin
-  const admin = await Admin.findById(createdBy);
-  admin.classLevels.push(classCreated._id);
-  //save
-  await admin.save({ validateBeforeSave: false });
 
   res.status(201).json({
     status: "success",
@@ -52,17 +44,16 @@ exports.getClassLevel = asyncHandler(async (req, res, next) => {
 
 exports.updateClassLevel = asyncHandler(async (req, res, next) => {
   const { name, description } = req.body;
-  //check name exists
+  // Check name exists
   const classFound = await ClassLevel.findOne({ name });
   if (classFound) {
-    return next(new AppError("Class  already exists"))
+    return next(new AppError("Class already exists"))
   }
   const classLevel = await ClassLevel.findByIdAndUpdate(
     req.params.id,
     {
       name,
-      description,
-      createdBy: req.user.id,
+      description
     },
     {
       new: true,

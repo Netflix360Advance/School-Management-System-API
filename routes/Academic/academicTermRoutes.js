@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect, restrictTo } = require("../../controllers/staff/adminController");
+// const { protect, restrictTo } = require("../../controllers/staff/adminController");
 const {
   createAcademicTerm,
   getAcademicTerms,
@@ -12,7 +12,8 @@ const { academicTermValidationSchema, academicTermUpdateSchema } = require('../.
 
 const router = express.Router();
 
-router.use(protect, restrictTo("admin"));
+// REMOVE or COMMENT OUT this line:
+// router.use(protect, restrictTo("admin"));
 
 router
   .route("/")

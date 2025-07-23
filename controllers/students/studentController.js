@@ -1,32 +1,18 @@
 const Student = require('../../models/Academic/Student')
 const asyncHandler = require('../../utils/asyncHandler')
 const AppError = require('../../utils/appErrors')
-const createToken = require('../../utils/createToken')
 const ExamResult = require('../../models/Academic/ExamResults')
 const Exam = require('../../models/Academic/Exam')
 
-
-
-// Helper function to send JWT token as a response
-const sendTokenResponse = (res, user, statusCode) => {
-  // Create a JWT token 
-  const token = createToken(res, user);
-
-  res.status(statusCode).json({
-    status: "success",
-    token,
-    user,
-  });
-};
-
+// Register a new student (admin action)
 exports.adminRegisterStudent = asyncHandler(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
-  //check if student already exists
+  // Check if student already exists
   const studentFound = await Student.findOne({ email });
   if (studentFound) {
     return next(new AppError("student already exist"))
   }
-  // create
+  // Create student
   const newStudent = await Student.create({
     name,
     email,
@@ -35,11 +21,14 @@ exports.adminRegisterStudent = asyncHandler(async (req, res, next) => {
   });
 
   newStudent.password = undefined
-  //send Studuent data
-  sendTokenResponse(res, newStudent, 201);
+  // Send student data
+  res.status(201).json({
+    status: "success",
+    student: newStudent
+  });
 });
 
-//LOGIN Studuent 
+// LOGIN Student 
 exports.loginStudent = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -63,9 +52,11 @@ exports.loginStudent = asyncHandler(async (req, res, next) => {
 
   student.password = undefined;
 
-  sendTokenResponse(res, student, 200);
+  res.status(200).json({
+    status: "success",
+    student
+  });
 });
-
 
 exports.getAllStudents = asyncHandler(async (req, res, next) => {
   const students = await Student.find();
@@ -77,7 +68,7 @@ exports.getAllStudents = asyncHandler(async (req, res, next) => {
 
 exports.getStudent = asyncHandler(async (req, res, next) => {
   const { studentId } = req.params;
-  //find the student
+  // Find the student
   const student = await Student.findById(studentId);
   if (!student) {
     return next(new AppError("Student not found"))
@@ -89,8 +80,10 @@ exports.getStudent = asyncHandler(async (req, res, next) => {
   });
 });
 
+// Now expects :studentId param instead of req.user.id
 exports.getStudentProfile = asyncHandler(async (req, res, next) => {
-  const student = await Student.findById(req.user.id)
+  const { studentId } = req.params;
+  const student = await Student.findById(studentId)
   if (!student) {
     return next(new AppError("student not found"))
   }
@@ -103,7 +96,6 @@ exports.getStudentProfile = asyncHandler(async (req, res, next) => {
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach(el => {
-    // If the property is in the list of allowed fields, add it to the new object
     if (allowedFields.includes(el)) {
       newObj[el] = obj[el];
     }
@@ -111,9 +103,8 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
-// Update student data except for password
+// Update student data except for password (now expects :studentId param)
 exports.updateStudentData = asyncHandler(async (req, res, next) => {
-  // 1) Check if the request includes password-related fields; if so, disallow updates
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
@@ -123,10 +114,10 @@ exports.updateStudentData = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // 2) Filter out any unwanted fields that should not be updated
+  const { studentId } = req.params;
   const filteredBody = filterObj(req.body, 'name', 'email');
 
-  const updatedStudent = await Student.findByIdAndUpdate(req.user.id, filteredBody, {
+  const updatedStudent = await Student.findByIdAndUpdate(studentId, filteredBody, {
     new: true,
     runValidators: true
   });
@@ -137,17 +128,15 @@ exports.updateStudentData = asyncHandler(async (req, res, next) => {
   });
 });
 
-//UPDATE PASSWORD
+// UPDATE PASSWORD (now expects :studentId param)
 exports.updateStudentPassword = asyncHandler(async (req, res, next) => {
-
   const { oldPassword, newPassword } = req.body;
   if (!oldPassword || !newPassword) {
     return next(new AppError('Please provide both values', 400))
   }
 
-  // 1) Find the student by ID and select the password field
-  const student = await Student.findById(req.user._id).select("+password");
-  // 2) Check if the entered current password is correct
+  const { studentId } = req.params;
+  const student = await Student.findById(studentId).select("+password");
   const isPasswordCorrect = await student.passwordMatching(
     oldPassword,
     student.password
@@ -156,14 +145,17 @@ exports.updateStudentPassword = asyncHandler(async (req, res, next) => {
   if (!isPasswordCorrect) {
     return next(new AppError("Your current password is incorrect", 401));
   }
-  // 3) Update the student's password with the new one and save the changes
+
   student.password = req.body.newPassword;
   student.passwordConfirm = req.body.passwordConfirm;
   await student.save();
 
   student.password = undefined;
 
-  sendTokenResponse(res, student, 200);
+  res.status(200).json({
+    status: "success",
+    student
+  });
 });
 
 exports.adminUpdateStudent = asyncHandler(async (req, res, next) => {
@@ -178,13 +170,13 @@ exports.adminUpdateStudent = asyncHandler(async (req, res, next) => {
     isWithdrawn,
   } = req.body;
 
-  //find the student by id
+  // Find the student by id
   const studentFound = await Student.findById(req.params.studentId);
   if (!studentFound) {
     return next(new AppError("Student not found"))
   }
 
-  //update
+  // Update
   const studentUpdated = await Student.findByIdAndUpdate(
     req.params.studentId,
     {
@@ -205,21 +197,22 @@ exports.adminUpdateStudent = asyncHandler(async (req, res, next) => {
       new: true,
     }
   );
-  //send response
+  // Send response
   res.status(200).json({
     status: "success",
     studentUpdated,
   });
 });
 
-
+// Now expects :studentId param instead of req.user.id
 exports.writeExam = asyncHandler(async (req, res, next) => {
-  //get student
-  const studentFound = await Student.findById(req.user.id);
+  const { studentId } = req.params;
+  // Get student
+  const studentFound = await Student.findById(studentId);
   if (!studentFound) {
     return next(new AppError("Student not found"))
   }
-  //Get exam
+  // Get exam
   const examFound = await Exam.findById(req.params.examId)
     .populate("questions")
     .populate("academicTerm");
@@ -227,17 +220,17 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
   if (!examFound) {
     return (new AppError("Exam not found"))
   }
-  //get questions
+  // Get questions
   const { questions } = examFound;
-  //get students questions
+  // Get students questions
   const studentAnswers = req.body.answers;
 
-  //check if student answered all questions
+  // Check if student answered all questions
   if (studentAnswers.length !== questions.length) {
     return next(new AppError("You have not answered all the questions"))
   }
 
-  // //check if student has already taken the exams
+  // Check if student has already taken the exams
   const studentFoundInResults = await ExamResult.findOne({
     student: studentFound.id,
   });
@@ -245,12 +238,12 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     return next(new AppError("You have already written this exam"))
   }
 
-  //check if student is suspende/withdrawn
+  // Check if student is suspended/withdrawn
   if (studentFound.isWithdrawn || studentFound.isSuspended) {
     return next(new AppError("You are suspended/withdrawn, you can't take this exam"))
   }
 
-  //Build report object
+  // Build report object
   let correctanswers = 0;
   let status = ""; //failed/passed
   let grade = 0;
@@ -258,18 +251,16 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
   let score = 0;
   let answeredQuestions = [];
 
-  //check for answers
+  // Check for answers
   for (let i = 0; i < questions.length; i += 1) {
-    //find the question
     const question = questions[i];
-    //check if the answer is correct
     if (question.correctAnswer === studentAnswers[i]) {
       correctanswers += 1;
       score += 1;
       question.isCorrect = true;
     }
   }
-  //calculate reports
+  // Calculate reports
   grade = (correctanswers / questions.length) * 100;
   answeredQuestions = questions.map(({ question, correctAnswer, isCorrect }) => ({
     question,
@@ -277,14 +268,14 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     isCorrect,
   }));
 
-  //calculate status
+  // Calculate status
   if (grade >= 50) {
     status = "Pass";
   } else {
     status = "Fail";
   }
 
-  //Remarks
+  // Remarks
   if (grade >= 80) {
     remarks = "Excellent";
   } else if (grade >= 70) {
@@ -297,7 +288,7 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     remarks = "Poor";
   }
 
-  //Generate Exam results
+  // Generate Exam results
   const examResults = await ExamResult.create({
     student: studentFound.id,
     exam: examFound.id,
@@ -310,13 +301,13 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     academicYear: examFound.academicYear,
     answeredQuestions: answeredQuestions,
   });
-  // //push the results into
+  // Push the results into
   studentFound.examResults.push(examResults.id);
-  // //save
+  // Save
   await studentFound.save({ validateBeforeSave: false });
 
-  //Promoting
-  //promote student to level 200
+  // Promoting
+  // Promote student to level 200
   if (
     examFound.academicTerm.name === "3th Term" &&
     status === "Pass" &&
@@ -329,7 +320,7 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     return
   }
 
-  //promote student to level 300
+  // Promote student to level 300
   if (
     examFound.academicTerm.name === "3th Term" &&
     status === "Pass" &&
@@ -342,7 +333,7 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     return
   }
 
-  //promote student to level 400
+  // Promote student to level 400
   if (
     examFound.academicTerm.name === "3th Term" &&
     status === "Pass" &&
@@ -355,7 +346,7 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     return
   }
 
-  //promote student to graduate
+  // Promote student to graduate
   if (
     examFound.academicTerm.name === "3th Term" &&
     status === "Pass" &&
@@ -371,4 +362,3 @@ exports.writeExam = asyncHandler(async (req, res, next) => {
     status: "success",
   });
 });
-

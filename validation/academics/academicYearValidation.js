@@ -22,17 +22,6 @@ const academicYearValidationSchema = Joi.object({
     }),
 
   isCurrent: Joi.boolean().default(false),
-
-  createdBy: Joi.string()
-    .required()
-    .messages({
-      'any.required': 'Created by admin is required',
-    }),
-
-  students: Joi.array().items(Joi.string()),
-
-  teachers: Joi.array().items(Joi.string()),
-
 }).options({ stripUnknown: true });
 
 const academicYearUpdateSchema = Joi.object({

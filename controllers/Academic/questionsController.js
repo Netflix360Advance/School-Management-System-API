@@ -3,33 +3,30 @@ const Question = require("../../models/Academic/Questions");
 const asyncHandler = require("../../utils/asyncHandler");
 const AppError = require("../../utils/appErrors");
 
-
 exports.createQuestion = asyncHandler(async (req, res, next) => {
-  const { question, optionA, optionB, optionC, optionD, correctAnswer } =
-    req.body;
-  //find the exam
+  const { question, optionA, optionB, optionC, optionD, correctAnswer } = req.body;
+  // Find the exam
   const examFound = await Exam.findById(req.params.examId);
   if (!examFound) {
-    return next(new AppError("Exam not found"))
+    return next(new AppError("Exam not found"));
   }
-  //check if question
+  // Check if question exists
   const questionExists = await Question.findOne({ question });
   if (questionExists) {
     return next(new AppError("Question already exists"));
   }
-  //create exam
+  // Create question
   const questionCreated = await Question.create({
     question,
     optionA,
     optionB,
     optionC,
     optionD,
-    correctAnswer,
-    createdBy: req.user.id,
+    correctAnswer
   });
-  //add the question into exam
+  // Add the question into exam
   examFound.questions.push(questionCreated.id);
-  //save
+  // Save
   await examFound.save({ validateBeforeSave: false });
 
   res.status(201).json({
@@ -50,7 +47,7 @@ exports.getQuestion = asyncHandler(async (req, res, next) => {
   const question = await Question.findById(req.params.id);
 
   if (!question) {
-    return next(new AppError('No Question with that id !', 404))
+    return next(new AppError('No Question with that id !', 404));
   }
 
   res.status(200).json({
@@ -60,12 +57,11 @@ exports.getQuestion = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateQuestion = asyncHandler(async (req, res, next) => {
-  const { question, optionA, optionB, optionC, optionD, correctAnswer } =
-    req.body;
-  //check name exists
+  const { question, optionA, optionB, optionC, optionD, correctAnswer } = req.body;
+  // Check if question exists
   const questionFound = await Question.findOne({ question });
   if (questionFound) {
-    return next(new AppError("Question already exists"))
+    return next(new AppError("Question already exists"));
   }
   const updatedQuestion = await Question.findByIdAndUpdate(
     req.params.id,
@@ -75,8 +71,7 @@ exports.updateQuestion = asyncHandler(async (req, res, next) => {
       optionB,
       optionC,
       optionD,
-      correctAnswer,
-      createdBy: req.user.id,
+      correctAnswer
     },
     {
       new: true,
@@ -85,7 +80,7 @@ exports.updateQuestion = asyncHandler(async (req, res, next) => {
   );
 
   if (!updatedQuestion) {
-    return next(new AppError('No Question with that id !', 404))
+    return next(new AppError('No Question with that id !', 404));
   }
 
   res.status(201).json({

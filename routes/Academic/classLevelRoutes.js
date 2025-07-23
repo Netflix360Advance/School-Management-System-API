@@ -1,12 +1,12 @@
 const express = require("express");
 const { getAllClassLevel, getClassLevel, createClassLevel, updateClassLevel, deleteClassLevel } = require("../../controllers/Academic/classLevelController");
-const { protect, restrictTo } = require("../../controllers/staff/adminController");
 const { classLevelValidationSchema, classLevelUpdateSchema } = require("../../validation/academics/classLevelValidation");
 const validationFunction = require("../../middleware/validationFunction");
 
 const router = express.Router();
 
-router.use(protect, restrictTo('admin'))
+// REMOVE or COMMENT OUT this line:
+// router.use(protect, restrictTo("admin"));
 
 router
   .route("/")

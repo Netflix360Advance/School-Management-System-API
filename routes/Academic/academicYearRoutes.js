@@ -1,5 +1,4 @@
 const express = require('express');
-const { protect, restrictTo } = require('../../controllers/staff/adminController');
 const {
   CreateAcademicYear,
   getAllAcademicYears,
@@ -12,7 +11,8 @@ const validationFunction = require('../../middleware/validationFunction');
 
 const router = express.Router();
 
-router.use(protect, restrictTo('admin'));
+// REMOVE or COMMENT OUT this line:
+// router.use(protect, restrictTo("admin"));
 
 router
   .route('/')

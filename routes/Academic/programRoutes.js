@@ -1,5 +1,4 @@
 const express = require("express");
-const { protect, restrictTo } = require("../../controllers/staff/adminController");
 const {
   getAllPrograms,
   getProgram,
@@ -14,7 +13,8 @@ const validation = require("../../middleware/validationFunction");
 
 const router = express.Router();
 
-router.use(protect, restrictTo('admin'));
+// REMOVE or COMMENT OUT this line:
+// router.use(protect);
 
 router.route("/")
   .post(validation(programValidationSchema), createProgram)

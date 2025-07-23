@@ -8,19 +8,6 @@ const classLevelValidationSchema = Joi.object({
     }),
 
   description: Joi.string(),
-
-  createdBy: Joi.string()
-    .required()
-    .messages({
-      'any.required': 'Created by admin is required',
-    }),
-
-  students: Joi.array().items(Joi.string()),
-
-  subjects: Joi.array().items(Joi.string()),
-
-  teachers: Joi.array().items(Joi.string()),
-
 }).options({ stripUnknown: true });
 
 const classLevelUpdateSchema = Joi.object({
@@ -33,7 +20,6 @@ const classLevelUpdateSchema = Joi.object({
     }),
 
   description: Joi.string(),
-
 }).options({ stripUnknown: true });
 
 module.exports = { classLevelValidationSchema, classLevelUpdateSchema };

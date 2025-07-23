@@ -1,5 +1,4 @@
 const express = require("express");
-const { protect, restrictTo } = require("../../controllers/staff/adminController");
 const {
   getAllSubjects,
   getSubject,
@@ -13,7 +12,8 @@ const { subjectValidationSchema, subjectUpdateSchema } = require('../../validati
 
 const router = express.Router();
 
-router.use(protect, restrictTo('admin'));
+// REMOVE or COMMENT OUT this line:
+// router.use(protect); // Middleware for authentication
 
 router.post("/:programId", validationFunction(subjectValidationSchema), createSubject);
 router.get('/', getAllSubjects);

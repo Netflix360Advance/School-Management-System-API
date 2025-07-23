@@ -11,7 +11,7 @@ const {
   writeExam
 } = require("../../controllers/students/studentController");
 
-const { protect, restrictTo } = require("../../controllers/staff/adminController");
+// const { protect, restrictTo } = require("../../controllers/staff/adminController");
 
 // Import Student Validation Schemas
 const {
@@ -27,19 +27,19 @@ const router = express.Router();
 // Public routes
 router.post("/login", loginStudent);
 
-// Student routes
-router.use(protect); // Middleware for authentication
+// REMOVE or COMMENT OUT this line:
+// router.use(protect); // Middleware for authentication
 
 // Student-specific routes
-router.patch("/updateMyPassword", validationFunction(studentPasswordSchema), restrictTo("student"), updateStudentPassword);
-router.get("/profile", restrictTo("student"), getStudentProfile);
-router.patch("/:studentId/update", validationFunction(updateStudentProfileSchema), restrictTo("student"), updateStudentData);
-router.post("/exam/:examId/write", restrictTo("student"), writeExam);
+router.patch("/updateMyPassword", validationFunction(studentPasswordSchema), updateStudentPassword);
+router.get("/profile", getStudentProfile);
+router.patch("/:studentId/update", validationFunction(updateStudentProfileSchema), updateStudentData);
+router.post("/exam/:examId/write", writeExam);
 
 // Admin routes
-router.post("/signup-student", validationFunction(studentRegisterSchema), restrictTo("admin"), adminRegisterStudent);
-router.get("/", restrictTo("admin"), getAllStudents);
-router.get("/:studentId", restrictTo("admin"), getStudent);
-router.patch("/:studentId/update/admin", restrictTo("admin"), adminUpdateStudent);
+router.post("/signup-student", validationFunction(studentRegisterSchema), adminRegisterStudent);
+router.get("/", getAllStudents);
+router.get("/:studentId", getStudent);
+router.patch("/:studentId/update/admin", adminUpdateStudent);
 
 module.exports = router;

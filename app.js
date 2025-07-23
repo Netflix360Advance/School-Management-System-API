@@ -8,8 +8,6 @@ const cors = require('cors');
 const hpp = require('hpp');
 const compression = require('compression');
 const errorController = require('./controllers/errorController');
-const adminRouter = require('./routes/staff/adminRoutes');
-const teacherRouter = require('./routes/staff/teacherRoutes');
 const studentRouter = require('./routes/Academic/studentRoutes');
 const academicYearRouteR = require('./routes/Academic/academicYearRoutes');
 const academicTermRouter = require('./routes/Academic/academicTermRoutes');
@@ -31,7 +29,7 @@ app.use(xss());
 app.use(hpp());
 app.use(compression());
 
-app.use(cookieParser(process.env.JWT_SECRET_KEY));
+app.use(cookieParser());
 app.use(cors());
 app.options('*', cors());
 app.use(express.json({ limit: '100kb' }));
@@ -47,8 +45,6 @@ app.use(
   })
 );
 
-app.use(`${apiVersion}/admins`, adminRouter);
-app.use(`${apiVersion}/teachers`, teacherRouter);
 app.use(`${apiVersion}/students`, studentRouter);
 app.use(`${apiVersion}/academic-years`, academicYearRouteR);
 app.use(`${apiVersion}/academic-terms`, academicTermRouter);
@@ -71,3 +67,4 @@ app.all('*', (req, _, next) => {
 app.use(errorController);
 
 module.exports = app;
+

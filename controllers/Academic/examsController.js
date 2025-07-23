@@ -1,9 +1,8 @@
-const Teacher = require("../../models/Staff/Teacher");
 const Exam = require("../../models/Academic/Exam");
 const asyncHandler = require("../../utils/asyncHandler");
 const AppError = require("../../utils/appErrors");
 
-// Create a new exam
+// Create a new exam (public)
 exports.createExam = asyncHandler(async (req, res, next) => {
   const {
     name,
@@ -18,12 +17,6 @@ exports.createExam = asyncHandler(async (req, res, next) => {
     academicYear,
     classLevel,
   } = req.body;
-
-  // Find the teacher
-  const teacherFound = await Teacher.findById(req.user.id);
-  if (!teacherFound) {
-    return next(new AppError('Teacher Not Found', 404));
-  }
 
   // Check if exam already exists
   const examExists = await Exam.findOne({ name });
@@ -43,13 +36,8 @@ exports.createExam = asyncHandler(async (req, res, next) => {
     examTime,
     examType,
     subject,
-    program,
-    createdBy: req.user.id,
+    program
   });
-
-  // Link the exam to the teacher
-  teacherFound.examsCreated.push(newExam.id);
-  await teacherFound.save({ validateBeforeSave: false });
 
   res.status(201).json({
     status: "success",
@@ -80,7 +68,7 @@ exports.getExam = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Update an exam
+// Update an exam (public)
 exports.updateExam = asyncHandler(async (req, res, next) => {
   const {
     name,
@@ -116,8 +104,7 @@ exports.updateExam = asyncHandler(async (req, res, next) => {
       examTime,
       examType,
       academicYear,
-      classLevel,
-      createdBy: req.user.id,
+      classLevel
     },
     {
       new: true,

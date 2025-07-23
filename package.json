@@ -25,14 +25,16 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-react": "^7.33.2",
-    "prettier": "^3.1.0"
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "supertest": "^6.3.4"
   },
   "name": "school-mangement-system",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "node.js",

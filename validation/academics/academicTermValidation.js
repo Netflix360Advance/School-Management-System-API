@@ -14,14 +14,7 @@ const academicTermValidationSchema = Joi.object({
     }),
 
   duration: Joi.string().default('3 months'),
-
-  createdBy: Joi.string()
-    .required()
-    .messages({
-      'any.required': 'Created by admin is required',
-    }),
 }).options({ stripUnknown: true });
-
 
 const academicTermUpdateSchema = Joi.object({
   name: Joi.string()
@@ -33,7 +26,6 @@ const academicTermUpdateSchema = Joi.object({
     }),
 
   description: Joi.string(),
-
 }).options({ stripUnknown: true });
 
 module.exports = { academicTermValidationSchema, academicTermUpdateSchema };

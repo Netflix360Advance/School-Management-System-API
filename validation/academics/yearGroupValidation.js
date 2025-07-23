@@ -7,12 +7,6 @@ const yearGroupValidationSchema = Joi.object({
       'any.required': 'Year group name is required',
     }),
 
-  createdBy: Joi.string()
-    .required()
-    .messages({
-      'any.required': 'Created by admin is required',
-    }),
-
   academicYear: Joi.string()
     .required()
     .messages({
